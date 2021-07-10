@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"example.com/hello/handlers"
 )
 
 func main() {
@@ -12,7 +14,7 @@ func main() {
 	hh := handlers.NewHello(l)
 
 	sm := http.NewServeMux()
-	sm.HandleFunc("/", hh)
+	sm.Handle("/", hh)
 
 	http.ListenAndServe("127.0.0.1:9090", sm)
 
