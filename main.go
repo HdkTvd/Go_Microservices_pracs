@@ -22,6 +22,7 @@ func main() {
 	sm.Handle("/", hh)
 	sm.Handle("/bye", gh)
 	sm.Handle("/product", ph)
+	sm.Handle("/product/", ph)
 
 	s := &http.Server{
 		Addr:         ":9090",
