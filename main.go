@@ -9,24 +9,40 @@ import (
 	"time"
 
 	"example.com/hello/handlers"
+	"github.com/gorilla/mux"
+	"github.com/nicholasjackson/env"
 )
+
+var bindAddress = env.String("BIND_ADDRESS", false, ":9090", "bind address for server, i.e. localhost")
 
 func main() {
 
+	env.Parse()
+
 	l := log.New(os.Stdout, "package-log:", log.LstdFlags)
-	hh := handlers.NewHello(l)
-	gh := handlers.NewGoodbye(l)
+	// hh := handlers.NewHello(l)
+	// gh := handlers.NewGoodbye(l)
 	ph := handlers.NewProducts(l)
 
-	sm := http.NewServeMux()
-	sm.Handle("/", hh)
-	sm.Handle("/bye", gh)
-	sm.Handle("/product", ph)
-	sm.Handle("/product/", ph)
+	sm := mux.NewRouter()
+	// sm.Handle("/", hh)
+	// sm.Handle("/bye", gh)
+	// sm.Handle("/product", ph)
+	// sm.Handle("/product/", ph)
+
+	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/product", ph.GetProducts)
+
+	putRouter := sm.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/product/{id:[0-9]+}", ph.UpdateProduct)
+
+	postRouter := sm.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/product", ph.AddProduct)
 
 	s := &http.Server{
-		Addr:         ":9090",
+		Addr:         *bindAddress,
 		Handler:      sm,
+		ErrorLog:     l,
 		ReadTimeout:  5 * time.Second,
 		IdleTimeout:  120 * time.Second,
 		WriteTimeout: 10 * time.Second,
